@@ -1,12 +1,12 @@
 {
   "dependencies": {
     "@line/bot-sdk": "^7.5.2",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongoose": "^7.4.4"
   },
   "name": "s3-vine-ridding",
   "version": "1.0.0",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

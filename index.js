@@ -10,6 +10,9 @@ const client = new Client(config);
 const app = express();
 const port = 3000;
 
+let buffMessage = ['xxxxxxx']
+let index = 0
+
 app.use(express.json());
 
 app.post('/webhook', (req, res) => {
@@ -23,7 +26,16 @@ app.post('/webhook', (req, res) => {
 
 function handleEvent(event) {
   if (event.type === 'message' && event.message.type === 'text') {
-    const message = { type: 'text', text: 'Hello, you said: ' + event.message.text };
+    buffMessage.push(event.message.text)
+    let message
+    if(buffMessage[index]){
+        message = { type: 'text', text: 'Hello, you said: ' + buffMessage[index] };
+        index++
+    }
+    else{
+        message = { type: 'text', text: 'error at buffer mesaage index '+index };
+    }
+    
     return client.replyMessage(event.replyToken, message);
   }
 }
