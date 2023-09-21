@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { Client } = require('@line/bot-sdk');
 
 const config = {
@@ -6,12 +7,28 @@ const config = {
   channelSecret: '31ab8dfa3c994419c6edb35fc65a7a68',
 };
 
+mongoose.connect('mongodb+srv://pmpeayala:pmpeayala@s3madpm01.hltgsm5.mongodb.net/?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Connection error:'));
+db.once('open', () => {
+  console.log('Connected to MongoDB');
+});
+
+const messageSchema = new mongoose.Schema({
+  userId: String,
+  messageText: String,
+  timestamp: Date
+});
+
+const Message = mongoose.model('Message', messageSchema);
+
 const client = new Client(config);
 const app = express();
 const port = 3000;
-
-let buffMessage = ['xxxxxxx']
-let index = 0
 
 app.use(express.json());
 
@@ -24,19 +41,25 @@ app.post('/webhook', (req, res) => {
     });
 });
 
-function handleEvent(event) {
+async function handleEvent(event) {
   if (event.type === 'message' && event.message.type === 'text') {
-    buffMessage.push(event.message.text)
-    let message
-    if(buffMessage[index]){
-        message = { type: 'text', text: 'Hello, you said: ' + buffMessage[index] };
-        index++
+    const userId = req.body.event.source.userId;
+    const messageText = req.body.event.message.text;
+
+    const newMessage = new Message({
+      userId: userId,
+      messageText: messageText,
+      timestamp: new Date()
+    });
+  
+    try {
+      await newMessage.save();
+      console.log('Message saved to MongoDB');
+    } catch (error) {
+      console.error('Error saving message:', error);
     }
-    else{
-        message = { type: 'text', text: 'error at buffer mesaage index '+index };
-    }
-    
-    return client.replyMessage(event.replyToken, message);
+  
+    return client.replyMessage(event.replyToken, "ได้เก็บข้อความของคุณไว้ใน Mongo DB แล้ว");
   }
 }
 
