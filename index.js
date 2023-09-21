@@ -1,30 +1,36 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const { Client } = require('@line/bot-sdk');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://pmpeayala:E7fsXIt4yPCKl1Pl@s3madpm01.hltgsm5.mongodb.net/?retryWrites=true&w=majority";
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const mongoClient = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+    // useUnifiedTopology: true
+  }
+});
+
+async function run() {
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await mongoClient.connect();
+    // Send a ping to confirm a successful connection
+    await mongoClient.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await mongoClient.close();
+  }
+}
+run().catch(console.dir);
 
 const config = {
   channelAccessToken: 'X93vYR6Ih/TaR+6Y9ypAjCClXqQwcKi4T83MVT+wGfbMQB+Nbq1/3YoNEXveeYLEMeUnGf1gc0nCp08TzKiM8sr7t7BTPozmNLXERfS0eBSGQl599aoWN7yeHXOA8wY5yhZ9eeujmp1yCyrwotKW6AdB04t89/1O/w1cDnyilFU=',
   channelSecret: '31ab8dfa3c994419c6edb35fc65a7a68',
 };
-
-mongoose.connect('mongodb+srv://pmpeayala:pmpeayala@s3madpm01.hltgsm5.mongodb.net/?retryWrites=true&w=majority', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
-
-const messageSchema = new mongoose.Schema({
-  userId: String,
-  messageText: String,
-  timestamp: Date
-});
-
-const Message = mongoose.model('Message', messageSchema);
 
 const client = new Client(config);
 const app = express();
