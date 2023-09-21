@@ -1,10 +1,16 @@
 const express = require('express');
 const { Client } = require('@line/bot-sdk');
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://pmpeayala:E7fsXIt4yPCKl1Pl@s3madpm01.hltgsm5.mongodb.net/?retryWrites=true&w=majority";
+require("dotenv").config()
+
+if(process.env.MONGODB_URI){
+  console.log(process.env.MONGODB_URI)
+}else{
+  console.log("NO")
+}
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const mongoClient = new MongoClient(uri, {
+const mongoClient = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -13,13 +19,17 @@ const mongoClient = new MongoClient(uri, {
   }
 });
 
+const timeCollection = mongoClient.db("connection").collection("time")
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await mongoClient.connect();
     // Send a ping to confirm a successful connection
-    await mongoClient.db("admin").command({ ping: 1 });
+    await mongoClient.db("connection").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    var myobj = { connectTime: new Date(), from: "Local Desktop" };
+    await timeCollection.insertOne(myobj)
   } finally {
     // Ensures that the client will close when you finish/error
     await mongoClient.close();
@@ -34,7 +44,7 @@ const config = {
 
 const client = new Client(config);
 const app = express();
-const port = 3000;
+const port = 3011;
 
 app.use(express.json());
 
